@@ -1,0 +1,41 @@
+# --- Environment variables (NEVER commit real .env files) ---
+.env
+.env.local
+*.env
+!.env.example
+
+# --- Python / Backend ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+env/
+*.sqlite3
+
+# --- Node / Frontend ---
+node_modules/
+dist/
+build/
+.vite/
+*.log
+npm-debug.log*
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Alembic ---
+# (versions/ SHOULD be committed - it's your migration history, not ignored)
+
+# --- Mindora local databases and generated data ---
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+backend/chroma_db/
+
+# --- Generated TypeScript cache ---
+frontend/tsconfig.tsbuildinfo
