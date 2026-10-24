@@ -56,28 +56,28 @@ navigate("/check-email", {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#faf9ff]">
+    <main className="relative min-h-screen overflow-hidden bg-canvas">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-40 -top-32 h-[500px] w-[500px] rounded-full bg-[#e5e0ff] opacity-70 blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 h-[450px] w-[450px] rounded-full bg-[#ddd7ff] opacity-60 blur-3xl" />
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-80 blur-3xl" />
+        <div className="absolute -left-40 -top-32 h-[500px] w-[500px] rounded-full bg-blush opacity-70 blur-3xl" />
+        <div className="absolute -bottom-40 -right-40 h-[450px] w-[450px] rounded-full bg-mist opacity-60 blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface opacity-80 blur-3xl" />
       </div>
 
       {/* Top navigation */}
       <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-7 lg:px-8">
         <Link
           to="/"
-          className="text-sm font-semibold text-[#383541] transition-colors hover:text-[#17151f]"
+          className="text-sm font-semibold text-ink-700 transition-colors hover:text-ink-900"
         >
           ← Back to home
         </Link>
 
-        <div className="text-sm text-[#777381]">
+        <div className="text-sm text-ink-500">
           Already have an account?{" "}
           <Link
             to="/login"
-            className="font-semibold text-[#8878ed] transition-colors hover:text-[#6f5fdb]"
+            className="font-semibold text-brand-600 transition-colors hover:text-brand-700"
           >
             Log in
           </Link>
@@ -91,43 +91,43 @@ navigate("/check-email", {
           {/* Left content */}
           <div className="hidden lg:block">
             <div className="max-w-xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#e5e0f5] bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8878ed] backdrop-blur-sm">
-                <span className="h-2 w-2 rounded-full bg-[#8878ed]" />
+              <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-600 backdrop-blur-sm">
+                <span className="h-2 w-2 rounded-full bg-brand-500" />
                 Begin your journey
               </span>
 
-              <h1 className="mt-7 text-5xl font-semibold leading-[1.05] tracking-[-0.04em] text-[#17151f] xl:text-6xl">
+              <h1 className="mt-7 text-5xl font-semibold leading-[1.05] tracking-[-0.04em] text-ink-900 xl:text-6xl">
                 A little space
                 <br />
                 for{" "}
-                <span className="text-[#8878ed]">
+                <span className="text-brand-600">
                   yourself.
                 </span>
               </h1>
 
-              <p className="mt-7 max-w-lg text-lg leading-8 text-[#716d7c]">
+              <p className="mt-7 max-w-lg text-lg leading-8 text-ink-500">
                 Create your account and take the first step toward
                 understanding your emotions, reflecting on your wellbeing,
                 and building healthier habits.
               </p>
 
               <div className="mt-9 space-y-4">
-                <div className="flex items-center gap-3 text-sm text-[#777381]">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eeeaff] text-[#8878ed]">
+                <div className="flex items-center gap-3 text-sm text-ink-500">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-mist text-brand-600">
                     ✓
                   </span>
                   Personalized wellness experience
                 </div>
 
-                <div className="flex items-center gap-3 text-sm text-[#777381]">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eeeaff] text-[#8878ed]">
+                <div className="flex items-center gap-3 text-sm text-ink-500">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-mist text-brand-600">
                     ✓
                   </span>
                   AI companion available anytime
                 </div>
 
-                <div className="flex items-center gap-3 text-sm text-[#777381]">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eeeaff] text-[#8878ed]">
+                <div className="flex items-center gap-3 text-sm text-ink-500">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-mist text-brand-600">
                     ✓
                   </span>
                   Private and secure account
@@ -138,20 +138,34 @@ navigate("/check-email", {
 
           {/* Register card */}
           <div className="mx-auto w-full max-w-md">
-            <div className="rounded-[32px] border border-[#e8e3f2] bg-white/90 p-7 shadow-2xl shadow-[#8b7cf6]/10 backdrop-blur-xl sm:p-9">
+            <div className="rounded-[32px] border border-line bg-surface/95 p-7 shadow-2xl shadow-brand-500/10 backdrop-blur-xl sm:p-9">
 
               {/* Heading */}
               <div>
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eeeaff] text-xl text-[#8878ed]">
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-mist text-xl text-brand-600">
                   ✦
                 </div>
 
-                <h2 className="text-3xl font-semibold tracking-[-0.03em] text-[#17151f]">
+                <h2 className="text-3xl font-semibold tracking-[-0.03em] text-ink-900">
                   Create your account
                 </h2>
 
-                <p className="mt-2 text-sm leading-6 text-[#777381]">
+                <p className="mt-2 text-sm leading-6 text-ink-500">
                   Start your personal wellness journey with Mindora.
+                </p>
+              </div>
+
+              {/* Professional entry point */}
+              <div className="mt-6 rounded-2xl border border-line bg-surface-muted p-4">
+                <p className="text-sm leading-6 text-ink-500">
+                  Are you a mental health professional?{" "}
+                  <Link
+                    to="/professional/register"
+                    className="font-semibold text-brand-600 transition-colors hover:text-brand-700"
+                  >
+                    Sign up as a Professional
+                  </Link>
+                  .
                 </p>
               </div>
 
@@ -162,7 +176,7 @@ navigate("/check-email", {
                 <div>
                   <label
                     htmlFor="fullName"
-                    className="mb-2 block text-sm font-medium text-[#383541]"
+                    className="mb-2 block text-sm font-medium text-ink-700"
                   >
                     Full name
                   </label>
@@ -174,7 +188,7 @@ navigate("/check-email", {
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Enter your full name"
                     required
-                    className="w-full rounded-2xl border border-[#e5e0ed] bg-[#faf9ff] px-4 py-3.5 text-sm text-[#25222e] outline-none transition-all placeholder:text-[#aaa5b5] focus:border-[#b7acf5] focus:bg-white focus:ring-4 focus:ring-[#8878ed]/10"
+                    className="w-full rounded-2xl border border-line bg-surface-muted px-4 py-3.5 text-sm text-ink-800 outline-none transition-all placeholder:text-ink-400 focus:border-brand-400 focus:bg-surface focus:ring-4 focus:ring-brand-500/10"
                   />
                 </div>
 
@@ -182,7 +196,7 @@ navigate("/check-email", {
                 <div>
                   <label
                     htmlFor="email"
-                    className="mb-2 block text-sm font-medium text-[#383541]"
+                    className="mb-2 block text-sm font-medium text-ink-700"
                   >
                     Email address
                   </label>
@@ -194,7 +208,7 @@ navigate("/check-email", {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     required
-                    className="w-full rounded-2xl border border-[#e5e0ed] bg-[#faf9ff] px-4 py-3.5 text-sm text-[#25222e] outline-none transition-all placeholder:text-[#aaa5b5] focus:border-[#b7acf5] focus:bg-white focus:ring-4 focus:ring-[#8878ed]/10"
+                    className="w-full rounded-2xl border border-line bg-surface-muted px-4 py-3.5 text-sm text-ink-800 outline-none transition-all placeholder:text-ink-400 focus:border-brand-400 focus:bg-surface focus:ring-4 focus:ring-brand-500/10"
                   />
                 </div>
 
@@ -202,7 +216,7 @@ navigate("/check-email", {
                 <div>
                   <label
                     htmlFor="password"
-                    className="mb-2 block text-sm font-medium text-[#383541]"
+                    className="mb-2 block text-sm font-medium text-ink-700"
                   >
                     Password
                   </label>
@@ -214,10 +228,10 @@ navigate("/check-email", {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Create a password"
                     required
-                    className="w-full rounded-2xl border border-[#e5e0ed] bg-[#faf9ff] px-4 py-3.5 text-sm text-[#25222e] outline-none transition-all placeholder:text-[#aaa5b5] focus:border-[#b7acf5] focus:bg-white focus:ring-4 focus:ring-[#8878ed]/10"
+                    className="w-full rounded-2xl border border-line bg-surface-muted px-4 py-3.5 text-sm text-ink-800 outline-none transition-all placeholder:text-ink-400 focus:border-brand-400 focus:bg-surface focus:ring-4 focus:ring-brand-500/10"
                   />
 
-                  <p className="mt-2 text-xs text-[#aaa5b5]">
+                  <p className="mt-2 text-xs text-ink-400">
                     Use at least 8 characters.
                   </p>
                 </div>
@@ -226,7 +240,7 @@ navigate("/check-email", {
                 <div>
                   <label
                     htmlFor="confirmPassword"
-                    className="mb-2 block text-sm font-medium text-[#383541]"
+                    className="mb-2 block text-sm font-medium text-ink-700"
                   >
                     Confirm password
                   </label>
@@ -238,7 +252,7 @@ navigate("/check-email", {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm your password"
                     required
-                    className="w-full rounded-2xl border border-[#e5e0ed] bg-[#faf9ff] px-4 py-3.5 text-sm text-[#25222e] outline-none transition-all placeholder:text-[#aaa5b5] focus:border-[#b7acf5] focus:bg-white focus:ring-4 focus:ring-[#8878ed]/10"
+                    className="w-full rounded-2xl border border-line bg-surface-muted px-4 py-3.5 text-sm text-ink-800 outline-none transition-all placeholder:text-ink-400 focus:border-brand-400 focus:bg-surface focus:ring-4 focus:ring-brand-500/10"
                   />
                 </div>
 
@@ -253,7 +267,7 @@ navigate("/check-email", {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group flex w-full items-center justify-center gap-2 rounded-full bg-[#17151f] px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-black/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#292631] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-black/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-ink-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? "Creating account..." : "Create account"}
 
@@ -266,19 +280,19 @@ navigate("/check-email", {
               </form>
 
               {/* Terms */}
-              <p className="mt-6 text-center text-xs leading-5 text-[#918c9d]">
+              <p className="mt-6 text-center text-xs leading-5 text-ink-400">
                 By creating an account, you agree to use Mindora responsibly
                 and understand that it does not replace professional mental
                 healthcare.
               </p>
 
               {/* Login */}
-              <div className="mt-6 border-t border-[#ebe7f2] pt-6 text-center">
-                <p className="text-sm text-[#777381]">
+              <div className="mt-6 border-t border-line pt-6 text-center">
+                <p className="text-sm text-ink-500">
                   Already have an account?{" "}
                   <Link
                     to="/login"
-                    className="font-semibold text-[#8878ed] transition-colors hover:text-[#6f5fdb]"
+                    className="font-semibold text-brand-600 transition-colors hover:text-brand-700"
                   >
                     Log in
                   </Link>

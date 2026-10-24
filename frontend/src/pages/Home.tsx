@@ -8,7 +8,7 @@ import Footer from "@/components/landing/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#faf9ff] text-[#17151f]">
+    <div className="min-h-screen bg-canvas text-ink-900">
       <Navbar />
 
       <main>

@@ -36,6 +36,11 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 backend/chroma_db/
+backend/system_content/
 
 # --- Generated TypeScript cache ---
 frontend/tsconfig.tsbuildinfo
+# Local backups and private knowledge-base data
+_audit_backups/
+_redesign_backups/
+backend/kb_admin/

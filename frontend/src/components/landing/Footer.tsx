@@ -1,60 +1,63 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#faf9ff]">
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-
-        {/* Top */}
+    <footer className="border-t border-line bg-canvas">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-12 md:grid-cols-4">
-
           {/* Brand */}
           <div className="md:col-span-2">
             <Link
               to="/"
-              className="inline-flex items-center rounded-xl bg-[#8b7cf6] px-3 py-2 text-sm font-bold text-white"
+              className="inline-flex items-center gap-2.5"
+              aria-label="Mindora home"
             >
-              Mindora
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500 text-sm font-bold text-white">
+                M
+              </span>
+              <span className="text-lg font-bold tracking-tight text-ink-900">
+                Mindora
+              </span>
             </Link>
 
-            <p className="mt-5 max-w-md text-sm leading-6 text-[#777381]">
+            <p className="mt-5 max-w-md text-sm leading-6 text-ink-500">
               A supportive AI mental wellness platform designed to help you
               understand your emotions, reflect on your wellbeing, and connect
               with professional support.
             </p>
+
+            
           </div>
 
           {/* Platform */}
           <div>
-            <h3 className="text-sm font-semibold text-[#25222e]">
-              Platform
-            </h3>
+            <h3 className="text-sm font-semibold text-ink-800">Platform</h3>
 
             <div className="mt-5 flex flex-col gap-3">
               <a
                 href="#features"
-                className="text-sm text-[#777381] transition-colors hover:text-[#17151f]"
+                className="text-sm text-ink-500 transition-colors hover:text-ink-900"
               >
                 Features
               </a>
 
               <a
                 href="#how-it-works"
-                className="text-sm text-[#777381] transition-colors hover:text-[#17151f]"
+                className="text-sm text-ink-500 transition-colors hover:text-ink-900"
               >
                 How It Works
               </a>
 
               <a
                 href="#professionals"
-                className="text-sm text-[#777381] transition-colors hover:text-[#17151f]"
+                className="text-sm text-ink-500 transition-colors hover:text-ink-900"
               >
                 Professionals
               </a>
 
               <a
                 href="#safety"
-                className="text-sm text-[#777381] transition-colors hover:text-[#17151f]"
+                className="text-sm text-ink-500 transition-colors hover:text-ink-900"
               >
                 Safety
               </a>
@@ -63,42 +66,33 @@ export default function Footer() {
 
           {/* Account */}
           <div>
-            <h3 className="text-sm font-semibold text-[#25222e]">
-              Account
-            </h3>
+            <h3 className="text-sm font-semibold text-ink-800">Account</h3>
 
             <div className="mt-5 flex flex-col gap-3">
               <Link
                 to="/login"
-                className="text-sm text-[#777381] transition-colors hover:text-[#17151f]"
+                className="text-sm text-ink-500 transition-colors hover:text-ink-900"
               >
                 Log in
               </Link>
 
               <Link
-                to="/login"
-                className="text-sm text-[#777381] transition-colors hover:text-[#17151f]"
+                to="/register"
+                className="text-sm text-ink-500 transition-colors hover:text-ink-900"
               >
-                Get Started
+                Create an account
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="my-12 h-px bg-[#e7e3ef]" />
+        <div className="my-12 h-px bg-line" />
 
-        {/* Bottom */}
-        <div className="flex flex-col gap-4 text-sm text-[#918c9d] sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {new Date().getFullYear()} Mindora. All rights reserved.
-          </p>
+        <div className="flex flex-col gap-4 text-sm text-ink-400 sm:flex-row sm:items-center sm:justify-between">
+          <p>Copyright {new Date().getFullYear()} Mindora. All rights reserved.</p>
 
-          <p>
-            Designed for a calmer, healthier digital experience.
-          </p>
+          <p>Designed for a calmer, healthier digital experience.</p>
         </div>
-
       </div>
     </footer>
   );

@@ -28,12 +28,12 @@ export default function Professionals() {
   return (
     <section
       id="professionals"
-      className="relative overflow-hidden bg-white py-24 sm:py-32"
+      className="relative overflow-hidden bg-surface py-24 sm:py-32"
     >
       {/* Background decoration */}
-      <div className="pointer-events-none absolute -right-40 top-0 h-[500px] w-[500px] rounded-full bg-[#eeeaff] opacity-60 blur-3xl" />
+      <div className="pointer-events-none absolute -right-40 top-0 h-[500px] w-[500px] rounded-full bg-mist opacity-60 blur-3xl" />
 
-      <div className="pointer-events-none absolute -left-40 bottom-0 h-[400px] w-[400px] rounded-full bg-[#f6f3ff] blur-3xl" />
+      <div className="pointer-events-none absolute -left-40 bottom-0 h-[400px] w-[400px] rounded-full bg-mist blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
 
@@ -41,19 +41,19 @@ export default function Professionals() {
         <div className="grid items-end gap-8 lg:grid-cols-2">
 
           <div>
-            <span className="inline-flex items-center rounded-full border border-[#e5e0f5] bg-[#faf9ff] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8878ed]">
+            <span className="inline-flex items-center rounded-full border border-line bg-surface-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
               Professional Support
             </span>
 
-            <h2 className="mt-6 max-w-2xl text-4xl font-semibold tracking-[-0.035em] text-[#17151f] sm:text-5xl">
+            <h2 className="mt-6 max-w-2xl text-4xl font-semibold tracking-[-0.035em] text-ink-900 sm:text-5xl">
               AI support when you need it.
-              <span className="text-[#8878ed]">
+              <span className="text-brand-600">
                 {" "}Human support when you want it.
               </span>
             </h2>
           </div>
 
-          <p className="max-w-xl text-base leading-7 text-[#716d7c] lg:ml-auto lg:pb-1 sm:text-lg">
+          <p className="max-w-xl text-base leading-7 text-ink-500 lg:ml-auto lg:pb-1 sm:text-lg">
             Mindora is designed to give you different levels of support.
             Start with your AI companion and connect with a mental health
             professional whenever you feel ready.
@@ -65,30 +65,30 @@ export default function Professionals() {
           {professionals.map((professional) => (
             <div
               key={professional.name}
-              className="group rounded-[28px] border border-[#ebe7f4] bg-[#faf9ff] p-7 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:shadow-[#8b7cf6]/10"
+              className="group rounded-[28px] border border-line bg-surface-muted p-7 transition-all duration-300 hover:-translate-y-1 hover:bg-surface hover:shadow-xl hover:shadow-brand-500/10"
             >
               {/* Profile visual */}
               <div className="flex items-center justify-between">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#dcd5ff] to-[#bcb0fa] text-sm font-bold text-[#6555c7]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-200 to-brand-300 text-sm font-bold text-brand-700">
                   {professional.initials}
                 </div>
 
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-[#8878ed] shadow-sm">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-sm text-brand-600 shadow-sm">
                   ✓
                 </span>
               </div>
 
               {/* Content */}
               <div className="mt-8">
-                <h3 className="text-xl font-semibold tracking-tight text-[#25222e]">
+                <h3 className="text-xl font-semibold tracking-tight text-ink-800">
                   {professional.name}
                 </h3>
 
-                <p className="mt-2 text-sm font-medium text-[#8878ed]">
+                <p className="mt-2 text-sm font-medium text-brand-600">
                   {professional.role}
                 </p>
 
-                <p className="mt-4 text-sm leading-6 text-[#777381]">
+                <p className="mt-4 text-sm leading-6 text-ink-500">
                   {professional.description}
                 </p>
               </div>
@@ -97,13 +97,13 @@ export default function Professionals() {
         </div>
 
         {/* CTA */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-5 rounded-[28px] border border-[#e8e3f2] bg-[#faf9ff] p-7 sm:flex-row sm:p-8">
+        <div className="mt-12 flex flex-col items-center justify-between gap-5 rounded-[28px] border border-line bg-surface-muted p-7 sm:flex-row sm:p-8">
           <div>
-            <h3 className="text-xl font-semibold text-[#25222e]">
+            <h3 className="text-xl font-semibold text-ink-800">
               Ready to explore professional support?
             </h3>
 
-            <p className="mt-2 text-sm text-[#777381]">
+            <p className="mt-2 text-sm text-ink-500">
               Browse available professionals and find the right type of support
               for you.
             </p>
@@ -111,7 +111,7 @@ export default function Professionals() {
 
           <Link
             to="/login"
-            className="shrink-0 rounded-full bg-[#17151f] px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#292631]"
+            className="shrink-0 rounded-full bg-ink-900 px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-ink-800"
           >
             Find a Professional →
           </Link>

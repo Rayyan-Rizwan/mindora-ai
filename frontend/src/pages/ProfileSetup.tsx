@@ -69,6 +69,45 @@ export default function ProfileSetup() {
     checkOnboardingStatus();
   }, [navigate]);
 
+  /*
+   * Prefill the form from the values the server actually stored, so a user
+   * who already has a profile row never sees their saved phone/timezone
+   * replaced by the defaults in this form.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadExistingProfile = async () => {
+      try {
+        const response = await api.get("/users/me");
+
+        if (cancelled) return;
+
+        const account = response.data;
+
+        if (account.full_name) {
+          setFullName(account.full_name);
+        }
+
+        if (account.profile?.phone) {
+          setPhone(account.profile.phone);
+        }
+
+        if (account.profile?.timezone) {
+          setTimezone(account.profile.timezone);
+        }
+      } catch (error) {
+        console.error("Could not prefill profile:", error);
+      }
+    };
+
+    void loadExistingProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleContinue = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -78,7 +117,9 @@ export default function ProfileSetup() {
     try {
       const response = await api.put("/users/me", {
         full_name: fullName,
-        phone: phone || null,
+        // Empty string means "clear/unset"; a value is stored trimmed. The
+        // backend treats null as "leave unchanged", so we never send null.
+        phone: phone.trim(),
         timezone,
       });
 
@@ -124,9 +165,10 @@ export default function ProfileSetup() {
     setLoading(true);
 
     try {
-      const response = await api.put("/users/me", {
-        timezone: "Asia/Karachi",
-      });
+      // Send an empty body: this still creates the profile row (so the
+      // backend marks setup as completed) but never overwrites a saved
+      // timezone or any other stored profile value with a default.
+      const response = await api.put("/users/me", {});
 
       setUser(response.data);
 
@@ -165,11 +207,11 @@ export default function ProfileSetup() {
    */
   if (checkingStatus) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#faf9ff]">
+      <main className="flex min-h-screen items-center justify-center bg-canvas">
         <div className="text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[#e5e0ed] border-t-[#8878ed]" />
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-line border-t-brand-500" />
 
-          <p className="mt-4 text-sm text-[#777381]">
+          <p className="mt-4 text-sm text-ink-500">
             Checking your profile...
           </p>
         </div>
@@ -178,14 +220,14 @@ export default function ProfileSetup() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#faf9ff]">
+    <main className="relative min-h-screen overflow-hidden bg-canvas">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-40 -top-32 h-[500px] w-[500px] rounded-full bg-[#e5e0ff] opacity-70 blur-3xl" />
+        <div className="absolute -left-40 -top-32 h-[500px] w-[500px] rounded-full bg-blush opacity-70 blur-3xl" />
 
-        <div className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-[#ddd7ff] opacity-60 blur-3xl" />
+        <div className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-mist opacity-60 blur-3xl" />
 
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-80 blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface opacity-80 blur-3xl" />
       </div>
 
       {/* Top bar */}
@@ -193,12 +235,12 @@ export default function ProfileSetup() {
         <button
           type="button"
           onClick={() => navigate("/")}
-          className="text-sm font-semibold text-[#383541] transition-colors hover:text-[#17151f]"
+          className="text-sm font-semibold text-ink-700 transition-colors hover:text-ink-900"
         >
           ← Mindora
         </button>
 
-        <span className="text-sm text-[#918c9d]">
+        <span className="text-sm text-ink-400">
           Step 1 of 2
         </span>
       </div>
@@ -209,25 +251,25 @@ export default function ProfileSetup() {
 
           {/* Progress */}
           <div className="mb-8">
-            <div className="h-1.5 overflow-hidden rounded-full bg-[#e8e3f2]">
-              <div className="h-full w-1/2 rounded-full bg-[#8878ed]" />
+            <div className="h-1.5 overflow-hidden rounded-full bg-line">
+              <div className="h-full w-1/2 rounded-full bg-brand-500" />
             </div>
           </div>
 
           {/* Card */}
-          <div className="rounded-[32px] border border-[#e8e3f2] bg-white/90 p-7 shadow-2xl shadow-[#8b7cf6]/10 backdrop-blur-xl sm:p-10">
+          <div className="rounded-[32px] border border-line bg-surface/95 p-7 shadow-2xl shadow-brand-500/10 backdrop-blur-xl sm:p-10">
 
             {/* Header */}
             <div className="max-w-xl">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eeeaff] text-xl text-[#8878ed]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-mist text-xl text-brand-600">
                 ✦
               </div>
 
-              <h1 className="mt-7 text-3xl font-semibold tracking-[-0.03em] text-[#17151f] sm:text-4xl">
+              <h1 className="mt-7 text-3xl font-semibold tracking-[-0.03em] text-ink-900 sm:text-4xl">
                 Let's get to know you.
               </h1>
 
-              <p className="mt-3 text-sm leading-6 text-[#777381] sm:text-base">
+              <p className="mt-3 text-sm leading-6 text-ink-500 sm:text-base">
                 A few details will help us personalize your Mindora
                 experience. You can change these later from your profile.
               </p>
@@ -242,7 +284,7 @@ export default function ProfileSetup() {
               <div>
                 <label
                   htmlFor="fullName"
-                  className="mb-2 block text-sm font-medium text-[#383541]"
+                  className="mb-2 block text-sm font-medium text-ink-700"
                 >
                   Full name
                 </label>
@@ -254,7 +296,7 @@ export default function ProfileSetup() {
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
                   required
-                  className="w-full rounded-2xl border border-[#e5e0ed] bg-[#faf9ff] px-4 py-3.5 text-sm text-[#25222e] outline-none transition-all placeholder:text-[#aaa5b5] focus:border-[#b7acf5] focus:bg-white focus:ring-4 focus:ring-[#8878ed]/10"
+                  className="w-full rounded-2xl border border-line bg-surface-muted px-4 py-3.5 text-sm text-ink-800 outline-none transition-all placeholder:text-ink-400 focus:border-brand-400 focus:bg-surface focus:ring-4 focus:ring-brand-500/10"
                 />
               </div>
 
@@ -262,11 +304,11 @@ export default function ProfileSetup() {
               <div>
                 <label
                   htmlFor="phone"
-                  className="mb-2 block text-sm font-medium text-[#383541]"
+                  className="mb-2 block text-sm font-medium text-ink-700"
                 >
                   Phone number
 
-                  <span className="ml-2 text-xs font-normal text-[#aaa5b5]">
+                  <span className="ml-2 text-xs font-normal text-ink-400">
                     Optional
                   </span>
                 </label>
@@ -277,7 +319,7 @@ export default function ProfileSetup() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+92 300 1234567"
-                  className="w-full rounded-2xl border border-[#e5e0ed] bg-[#faf9ff] px-4 py-3.5 text-sm text-[#25222e] outline-none transition-all placeholder:text-[#aaa5b5] focus:border-[#b7acf5] focus:bg-white focus:ring-4 focus:ring-[#8878ed]/10"
+                  className="w-full rounded-2xl border border-line bg-surface-muted px-4 py-3.5 text-sm text-ink-800 outline-none transition-all placeholder:text-ink-400 focus:border-brand-400 focus:bg-surface focus:ring-4 focus:ring-brand-500/10"
                 />
               </div>
 
@@ -285,7 +327,7 @@ export default function ProfileSetup() {
               <div>
                 <label
                   htmlFor="timezone"
-                  className="mb-2 block text-sm font-medium text-[#383541]"
+                  className="mb-2 block text-sm font-medium text-ink-700"
                 >
                   Timezone
                 </label>
@@ -294,7 +336,7 @@ export default function ProfileSetup() {
                   id="timezone"
                   value={timezone}
                   onChange={(e) => setTimezone(e.target.value)}
-                  className="w-full appearance-none rounded-2xl border border-[#e5e0ed] bg-[#faf9ff] px-4 py-3.5 text-sm text-[#25222e] outline-none transition-all focus:border-[#b7acf5] focus:bg-white focus:ring-4 focus:ring-[#8878ed]/10"
+                  className="w-full appearance-none rounded-2xl border border-line bg-surface-muted px-4 py-3.5 text-sm text-ink-800 outline-none transition-all focus:border-brand-400 focus:bg-surface focus:ring-4 focus:ring-brand-500/10"
                 >
                   <option value="Asia/Karachi">
                     Pakistan — Karachi (PKT)
@@ -333,7 +375,7 @@ export default function ProfileSetup() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group flex w-full items-center justify-center gap-2 rounded-full bg-[#17151f] px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-black/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#292631] disabled:cursor-not-allowed disabled:opacity-50"
+                className="group flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-black/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-ink-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? "Saving..." : "Continue"}
 
@@ -349,15 +391,15 @@ export default function ProfileSetup() {
                 type="button"
                 onClick={handleSkip}
                 disabled={loading}
-                className="w-full text-sm font-medium text-[#918c9d] transition-colors hover:text-[#5f5a69] disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full text-sm font-medium text-ink-400 transition-colors hover:text-ink-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Skip for now
               </button>
             </form>
 
             {/* Privacy note */}
-            <div className="mt-8 rounded-2xl bg-[#faf9ff] p-4">
-              <p className="text-center text-xs leading-5 text-[#918c9d]">
+            <div className="mt-8 rounded-2xl bg-surface-muted p-4">
+              <p className="text-center text-xs leading-5 text-ink-400">
                 Your information is associated with your account and is used
                 to personalize your experience.
               </p>

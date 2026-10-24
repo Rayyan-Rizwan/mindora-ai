@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { api } from "../services/api";
+import { api } from "@/services/api";
+
+type VerificationStatus = "verifying" | "success" | "error";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
 
-  const [status, setStatus] = useState<
-    "verifying" | "success" | "error"
-  >("verifying");
-
+  const [status, setStatus] = useState<VerificationStatus>("verifying");
   const [message, setMessage] = useState("");
 
   const verificationStarted = useRef(false);
@@ -31,9 +30,7 @@ export default function VerifyEmail() {
     const verifyEmail = async () => {
       try {
         const response = await api.get("/auth/verify-email", {
-          params: {
-            token,
-          },
+          params: { token },
         });
 
         setStatus("success");
@@ -48,21 +45,32 @@ export default function VerifyEmail() {
       }
     };
 
-    verifyEmail();
+    void verifyEmail();
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-[#faf9ff] flex items-center justify-center px-6">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm border border-gray-100 text-center">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-canvas px-6 py-16">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-40 -top-32 h-[500px] w-[500px] rounded-full bg-brand-200 opacity-70 blur-3xl" />
+        <div className="absolute -bottom-40 -right-40 h-[450px] w-[450px] rounded-full bg-line-strong opacity-60 blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-80 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-md rounded-4xl border border-line bg-white/90 p-8 text-center shadow-card backdrop-blur-xl sm:p-10">
         {status === "verifying" && (
           <>
-            <div className="mx-auto mb-5 h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100">
+              <span
+                className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent"
+                aria-hidden="true"
+              />
+            </div>
 
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="mt-6 text-2xl font-semibold tracking-[-0.03em] text-ink-900">
               Verifying your email
             </h1>
 
-            <p className="mt-3 text-gray-500">
+            <p className="mt-3 text-sm text-ink-500">
               Please wait while we verify your email address.
             </p>
           </>
@@ -70,50 +78,46 @@ export default function VerifyEmail() {
 
         {status === "success" && (
           <>
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-2xl">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-2xl text-emerald-600">
               ✓
             </div>
 
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="mt-6 text-2xl font-semibold tracking-[-0.03em] text-ink-900">
               Email verified
             </h1>
 
-            <p className="mt-3 text-gray-500">
-              {message}
-            </p>
+            <p className="mt-3 text-sm text-ink-500">{message}</p>
 
             <Link
               to="/login"
-              className="mt-6 inline-block rounded-xl bg-purple-600 px-6 py-3 text-white transition hover:bg-purple-700"
+              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-6 py-3.5 text-sm font-semibold text-white shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:bg-ink-800"
             >
-              Continue to Login
+              Continue to login →
             </Link>
           </>
         )}
 
         {status === "error" && (
           <>
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-2xl">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-2xl text-red-600">
               !
             </div>
 
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="mt-6 text-2xl font-semibold tracking-[-0.03em] text-ink-900">
               Verification failed
             </h1>
 
-            <p className="mt-3 text-gray-500">
-              {message}
-            </p>
+            <p className="mt-3 text-sm text-ink-500">{message}</p>
 
             <Link
               to="/login"
-              className="mt-6 inline-block rounded-xl bg-purple-600 px-6 py-3 text-white transition hover:bg-purple-700"
+              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-white px-6 py-3.5 text-sm font-semibold text-ink-800 shadow-sm transition-colors hover:border-line-strong hover:bg-mist"
             >
-              Back to Login
+              Back to login
             </Link>
           </>
         )}
       </div>
-    </div>
+    </main>
   );
 }

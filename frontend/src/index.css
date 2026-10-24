@@ -2,7 +2,220 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+@layer base {
+  :root {
+    color-scheme: light;
+
+    /* Dusty Rose & Cream (Light) */
+    --color-canvas: 245 239 230; /* #F5EFE6 */
+    --color-surface: 255 255 255; /* #FFFFFF */
+    --color-surface-muted: 250 246 241;
+    --color-mist: 245 227 227; /* #F5E3E3 */
+    --color-blush: 245 227 227;
+    --color-line: 231 220 212; /* #E7DCD4 */
+    --color-line-strong: 215 198 189;
+
+    /* Dusty Rose accents */
+    --color-brand-50: 250 243 243;
+    --color-brand-100: 247 235 236;
+    --color-brand-200: 240 219 220;
+    --color-brand-300: 226 193 196;
+    --color-brand-400: 199 149 155;
+    --color-brand-500: 183 121 128; /* #B77980 */
+    --color-brand-600: 143 81 91; /* #8F515B */
+    --color-brand-700: 123 69 78;
+    --color-brand-800: 98 55 62;
+    --color-brand-900: 79 44 50;
+
+    /* Text */
+    --color-ink-default: 56 52 49; /* #383431 */
+    --color-ink-900: 56 52 49;
+    --color-ink-800: 64 59 56;
+    --color-ink-700: 81 75 72;
+    --color-ink-600: 113 105 99; /* #716963 */
+    --color-ink-500: 113 105 99;
+    --color-ink-400: 138 129 123;
+    --color-ink-300: 164 154 147;
+  }
+
+  .dark {
+    color-scheme: dark;
+
+    /* Dusty Rose & Cream (Dark) */
+    --color-canvas: 33 29 34; /* #211D22 */
+    --color-surface: 45 39 46; /* #2D272E */
+    --color-surface-muted: 56 46 55; /* #382E37 */
+    --color-mist: 56 46 55;
+    --color-blush: 56 46 55;
+    --color-line: 74 61 70; /* #4A3D46 */
+    --color-line-strong: 92 76 84;
+
+    /* Soft rose accents */
+    --color-brand-50: 56 46 55;
+    --color-brand-100: 70 56 63;
+    --color-brand-200: 90 72 79;
+    --color-brand-300: 132 98 106;
+    --color-brand-400: 175 134 141;
+    --color-brand-500: 214 160 165; /* #D6A0A5 */
+    --color-brand-600: 227 182 185; /* #E3B6B9 */
+    --color-brand-700: 237 203 206;
+    --color-brand-800: 246 225 226;
+    --color-brand-900: 251 239 239;
+
+    /* Text */
+    --color-ink-default: 247 240 237; /* #F7F0ED */
+    --color-ink-900: 247 240 237;
+    --color-ink-800: 239 231 228;
+    --color-ink-700: 227 218 215;
+    --color-ink-600: 199 185 186; /* #C7B9BA */
+    --color-ink-500: 199 185 186;
+    --color-ink-400: 174 160 162;
+    --color-ink-300: 149 136 138;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    min-height: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply m-0 min-h-full bg-canvas font-sans text-ink-900 antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p,
+  li {
+    text-wrap: pretty;
+  }
+
+  /* Consistent, visible keyboard focus that also works on dark surfaces. */
+  *:focus-visible {
+    outline: 2px solid theme("colors.brand.500");
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: theme("colors.brand.200");
+    color: theme("colors.ink.900");
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Consistent page shell: centered, bounded and responsive. */
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Subtle scrollbar for long panels (chat history, notifications, tables). */
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: theme("colors.line-strong") transparent;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: theme("colors.line-strong");
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Respect device safe areas on notched mobile devices. */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Compatibility for the few legacy components that still use `bg-white`
+ * directly. New UI should prefer the `surface`/`canvas` semantic tokens.
+ * Text colors are handled by the Dusty Rose & Cream tokens defined in
+ * `:root` / `.dark` above, so no separate legacy text overrides are needed.
+ */
+.dark .bg-white {
+  background-color: rgb(var(--color-surface));
+}
+
+.dark [class~="bg-white/60"] {
+  background-color: rgb(var(--color-surface) / 0.6);
+}
+
+.dark [class~="bg-white/70"] {
+  background-color: rgb(var(--color-surface) / 0.7);
+}
+
+.dark [class~="bg-white/75"] {
+  background-color: rgb(var(--color-surface) / 0.75);
+}
+
+.dark [class~="bg-white/80"] {
+  background-color: rgb(var(--color-surface) / 0.8);
+}
+
+.dark [class~="bg-white/85"] {
+  background-color: rgb(var(--color-surface) / 0.85);
+}
+
+.dark [class~="bg-white/90"] {
+  background-color: rgb(var(--color-surface) / 0.9);
+}
+
+.dark [class~="bg-white/95"] {
+  background-color: rgb(var(--color-surface) / 0.95);
+}
+
+.dark .hover\:bg-white:hover {
+  background-color: rgb(var(--color-surface-muted));
+}
+
+  /* Primary dark buttons and links. Deep Rose keeps white label text
+     readable (the light-mode ink-900 token would render near-white here). */
+.dark .bg-ink-900 {
+  background-color: #8F515B;
+}
+
+.dark .hover\:bg-ink-800:hover {
+  background-color: #7B454E;
 }

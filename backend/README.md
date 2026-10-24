@@ -70,3 +70,51 @@ You should see all 13 tables listed.
 - All IDs are UUIDs (not sequential integers) — safer for a health-data app.
 - Cascade deletes are set up (e.g. deleting a user removes their profile, conversations, etc.) — review whether you actually want hard deletes before going to production; soft deletes may be safer for compliance.
 - `risk_flags`, `rag_documents`/`rag_chunks`, and `audit_logs` from the original ERD are **not** in this phase since they weren't in your Phase 4 table list — they'll come in the Risk Detection and RAG phases.
+
+## Reminder worker and scheduling
+
+`run_reminders.py` is the single reminder worker. One run performs:
+
+- mood reminders and low-mood follow-ups (`process_due_reminders`),
+- appointment reminders (`process_appointment_reminders`): a "starting soon"
+  note to the patient and assigned professional ~20 minutes before a
+  **confirmed** appointment, plus a "missing Google Meet link" note to
+  administrators on the calendar day of a **pending/confirmed** appointment
+  that has no link,
+- daily motivational notifications (only inside the 09:00–11:00 Asia/Karachi
+  window).
+
+All jobs are idempotent: notifications carry the appointment id and a fixed
+title, so running the worker repeatedly never creates duplicates. The worker
+commits once at the end and rolls back on any error.
+
+Run it once manually:
+
+```bash
+cd backend
+.venv\Scripts\python.exe run_reminders.py      # Windows
+# or:  python run_reminders.py
+```
+
+### Automatic scheduling (no extra dependencies)
+
+The worker is a plain script; scheduling is delegated to the operating system.
+Run it every 5 minutes so the 20-minute reminder window is never missed.
+
+**Windows — Task Scheduler:**
+
+```powershell
+$action  = New-ScheduledTaskAction -Execute "C:\...\project-scaffold\backend\.venv\Scripts\python.exe" -Argument "run_reminders.py" -WorkingDirectory "C:\...\project-scaffold\backend"
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5)
+Register-ScheduledTask -TaskName "MindoraReminders" -Action $action -Trigger $trigger
+```
+
+**Linux/macOS — cron** (every 5 minutes):
+
+```cron
+*/5 * * * * cd /path/to/project-scaffold/backend && .venv/bin/python run_reminders.py >> reminder_worker.log 2>&1
+```
+
+The in-app `POST /api/v1/notifications/process-mood-reminders` call only covers
+mood reminders for the signed-in user; appointment reminders require the worker
+above (or any other scheduler invoking `run_reminders.py`).

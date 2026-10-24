@@ -16,3 +16,38 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Backward-compatible session hardening: when any authenticated request
+// comes back 401 (expired/revoked token), drop the stale token and send
+// the user to the login page with a friendly flag. Auth endpoints and the
+// public auth-probe calls are excluded so login failures behave exactly
+// as before.
+const AUTH_PATHS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/logout",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/auth/verify-email",
+];
+
+api.interceptors.response.use(
+  (response) => response,
+  (error: unknown) => {
+    const status = (error as { response?: { status?: number } })?.response
+      ?.status;
+    const url = (error as { config?: { url?: string } })?.config?.url ?? "";
+
+    if (status === 401 && !AUTH_PATHS.some((path) => url.includes(path))) {
+      const hadToken = Boolean(localStorage.getItem("access_token"));
+      if (hadToken) {
+        localStorage.removeItem("access_token");
+        if (!window.location.pathname.startsWith("/login")) {
+          window.location.assign("/login?expired=1");
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
