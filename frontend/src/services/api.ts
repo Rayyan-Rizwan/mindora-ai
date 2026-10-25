@@ -1,10 +1,21 @@
 import axios from "axios";
 
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+
+if (import.meta.env.PROD && !configuredApiBaseUrl) {
+  throw new Error(
+    "VITE_API_BASE_URL is not configured. Production builds must target the deployed backend API."
+  );
+}
+
 // Points to the FastAPI backend (see backend/app/main.py)
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1",
+  baseURL:
+    configuredApiBaseUrl ||
+    (import.meta.env.DEV ? "http://localhost:8000/api/v1" : ""),
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "1",
   },
 });
 
