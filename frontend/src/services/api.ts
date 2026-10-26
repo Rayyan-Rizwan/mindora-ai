@@ -1,4 +1,9 @@
 import axios from "axios";
+import {
+  applyStoredAuthorizationHeader,
+  getRequestAuthorization,
+  shouldClearStoredSessionToken,
+} from "./apiAuth";
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
@@ -19,20 +24,23 @@ export const api = axios.create({
   },
 });
 
-// Attach auth token automatically if present
+// Attach auth token automatically if present, unless the caller supplied
+// an explicit Authorization header for a specific session.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (config.headers) {
+    applyStoredAuthorizationHeader(
+      config.headers,
+      localStorage.getItem("access_token")
+    );
   }
   return config;
 });
 
-// Backward-compatible session hardening: when any authenticated request
-// comes back 401 (expired/revoked token), drop the stale token and send
-// the user to the login page with a friendly flag. Auth endpoints and the
-// public auth-probe calls are excluded so login failures behave exactly
-// as before.
+// Backward-compatible session hardening: when an authenticated request comes
+// back 401 because its own token expired or was revoked, drop that token and
+// send the user to the login page. Auth endpoints are excluded so login
+// failures behave exactly as before. A stale 401 from an older request must
+// never clear a newer token that was stored by another tab.
 const AUTH_PATHS = [
   "/auth/login",
   "/auth/register",
@@ -49,9 +57,16 @@ api.interceptors.response.use(
       ?.status;
     const url = (error as { config?: { url?: string } })?.config?.url ?? "";
 
-    if (status === 401 && !AUTH_PATHS.some((path) => url.includes(path))) {
-      const hadToken = Boolean(localStorage.getItem("access_token"));
-      if (hadToken) {
+    if (!AUTH_PATHS.some((path) => url.includes(path))) {
+      const storedToken = localStorage.getItem("access_token");
+
+      if (
+        shouldClearStoredSessionToken({
+          status,
+          requestAuthorization: getRequestAuthorization(error),
+          storedToken,
+        })
+      ) {
         localStorage.removeItem("access_token");
         if (!window.location.pathname.startsWith("/login")) {
           window.location.assign("/login?expired=1");

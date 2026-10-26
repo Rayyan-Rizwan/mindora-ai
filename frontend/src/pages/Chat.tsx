@@ -2,6 +2,12 @@
 import { api } from "@/services/api";
 import { Button, Card, PageHeader, Spinner } from "@/components/ui";
 import { classNames } from "@/utils";
+import {
+  getActiveChatSessionToken,
+  getAuthorizedConversationSyncToken,
+  mergeConversationSummaries,
+  type ServerConversationSummary,
+} from "@/utils/chatConversations";
 
 interface Message {
   id: string;
@@ -20,9 +26,19 @@ interface Conversation {
   archived?: boolean;
 }
 
+interface ConversationHistory {
+  id: string;
+  title: string | null;
+  started_at: string;
+  messages: Message[];
+}
+
 interface CurrentUser {
   id: string;
 }
+
+const SESSION_CHANGED_MESSAGE =
+  "Your sign-in session changed in another tab. Reload the page to continue.";
 
 /*
  * Minimal typing for the (still experimental) Web Speech API. Not every
@@ -88,10 +104,15 @@ export default function Chat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
+  const [conversationsError, setConversationsError] = useState("");
+  const [historyError, setHistoryError] = useState("");
   const [showArchived, setShowArchived] = useState(false);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [userLoading, setUserLoading] = useState(true);
+  const activeUserIdRef = useRef<string | null>(null);
+  const sessionTokenRef = useRef<string | null>(null);
 
   const [speechSupported, setSpeechSupported] = useState(false);
   const [listening, setListening] = useState(false);
@@ -180,17 +201,109 @@ export default function Chat() {
   }, []);
 
   /*
+   * Requests read the active session at call time. If another tab has replaced
+   * the shared token, this Chat must stop acting instead of using that token.
+   */
+  const getActiveSessionToken = () =>
+    getActiveChatSessionToken({
+      sessionToken: sessionTokenRef.current,
+      storedToken: localStorage.getItem("access_token"),
+      activeUserId: activeUserIdRef.current,
+    });
+
+  /*
+   * Only merge account conversations while the exact token that verified this
+   * Chat identity is still active. A cross-tab login can replace the shared
+   * token at any time, and a stale response must never enter this user's cache.
+   */
+  const syncConversations = useCallback(async (userId: string) => {
+    const authorizedToken = getAuthorizedConversationSyncToken({
+      sessionToken: sessionTokenRef.current,
+      storedToken: localStorage.getItem("access_token"),
+      activeUserId: activeUserIdRef.current,
+      userId,
+    });
+
+    if (!authorizedToken) {
+      if (activeUserIdRef.current === userId) {
+        setConversationsLoading(false);
+      }
+      return;
+    }
+
+    setConversationsLoading(true);
+    setConversationsError("");
+
+    try {
+      const response = await api.get<ServerConversationSummary[]>(
+        "/chat/conversations",
+        { headers: { Authorization: `Bearer ${authorizedToken}` } }
+      );
+
+      const responseToken = getAuthorizedConversationSyncToken({
+        sessionToken: sessionTokenRef.current,
+        storedToken: localStorage.getItem("access_token"),
+        activeUserId: activeUserIdRef.current,
+        userId,
+      });
+
+      if (responseToken !== authorizedToken) return;
+
+      setConversations((current) =>
+        mergeConversationSummaries(current, response.data)
+      );
+    } catch (error) {
+      const errorToken = getAuthorizedConversationSyncToken({
+        sessionToken: sessionTokenRef.current,
+        storedToken: localStorage.getItem("access_token"),
+        activeUserId: activeUserIdRef.current,
+        userId,
+      });
+
+      if (errorToken !== authorizedToken) return;
+
+      console.error("Could not load account conversations:", error);
+      setConversationsError(
+        "Could not sync conversations from your account. Chats saved on this device are still shown."
+      );
+    } finally {
+      if (activeUserIdRef.current === userId) {
+        setConversationsLoading(false);
+      }
+    }
+  }, []);
+
+  /*
    * Load the authenticated user's ID so conversation history can be stored
    * separately for every user.
    */
   useEffect(() => {
     const loadCurrentUser = async () => {
-      try {
-        const response = await api.get<CurrentUser>("/users/me");
+      const token = localStorage.getItem("access_token");
 
+      if (!token) {
+        sessionTokenRef.current = null;
+        setCurrentUserId(null);
+        setUserLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get<CurrentUser>("/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (localStorage.getItem("access_token") !== token) {
+          sessionTokenRef.current = null;
+          setCurrentUserId(null);
+          return;
+        }
+
+        sessionTokenRef.current = token;
         setCurrentUserId(response.data.id);
       } catch (error) {
         console.error("Could not load current user:", error);
+        sessionTokenRef.current = null;
         setCurrentUserId(null);
       } finally {
         setUserLoading(false);
@@ -202,13 +315,19 @@ export default function Chat() {
 
   /*
    * Load conversation history for the CURRENT USER only.
-   * Each user gets a separate localStorage key.
+   * Each user gets a separate localStorage key, then account
+   * conversations are merged in from the backend.
    */
   useEffect(() => {
+    activeUserIdRef.current = currentUserId;
+
     if (!currentUserId) {
       setConversations([]);
       setConversationId(null);
       setMessages([]);
+      setConversationsError("");
+      setConversationsLoading(false);
+      setHistoryError("");
       return;
     }
 
@@ -230,7 +349,14 @@ export default function Chat() {
     // Reset the currently opened conversation when switching users.
     setConversationId(null);
     setMessages([]);
-  }, [currentUserId]);
+    setHistoryError("");
+
+    void syncConversations(currentUserId);
+
+    return () => {
+      activeUserIdRef.current = null;
+    };
+  }, [currentUserId, syncConversations]);
 
   /*
    * Save conversations to a user-specific localStorage key.
@@ -255,16 +381,32 @@ export default function Chat() {
     if (!message.trim() || loading) return;
 
     const userText = message.trim();
+    const sessionToken = getActiveSessionToken();
+
+    if (!sessionToken) {
+      setHistoryError(SESSION_CHANGED_MESSAGE);
+      return;
+    }
 
     setMessage("");
     setLoading(true);
+    setHistoryError("");
     if (composerRef.current) composerRef.current.style.height = "auto";
 
     try {
-      const response = await api.post("/chat", {
-        message: userText,
-        conversation_id: conversationId,
-      });
+      const response = await api.post(
+        "/chat",
+        {
+          message: userText,
+          conversation_id: conversationId,
+        },
+        { headers: { Authorization: `Bearer ${sessionToken}` } }
+      );
+
+      if (getActiveSessionToken() !== sessionToken) {
+        setHistoryError(SESSION_CHANGED_MESSAGE);
+        return;
+      }
 
       const data = response.data;
 
@@ -319,7 +461,11 @@ export default function Chat() {
         ];
       });
     } catch (error) {
-      console.error("Chat error:", error);
+      if (getActiveSessionToken() !== sessionToken) {
+        setHistoryError(SESSION_CHANGED_MESSAGE);
+      } else {
+        console.error("Chat error:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -330,17 +476,40 @@ export default function Chat() {
    * belongs to the currently authenticated user.
    */
   const openConversation = async (id: string) => {
+    const sessionToken = getActiveSessionToken();
+
+    if (!sessionToken) {
+      setHistoryError(SESSION_CHANGED_MESSAGE);
+      return;
+    }
+
     setHistoryLoading(true);
+    setHistoryError("");
 
     try {
-      const response = await api.get(`/chat/history/${id}`);
+      const response = await api.get<ConversationHistory>(
+        `/chat/history/${id}`,
+        { headers: { Authorization: `Bearer ${sessionToken}` } }
+      );
+
+      if (getActiveSessionToken() !== sessionToken) {
+        setHistoryError(SESSION_CHANGED_MESSAGE);
+        return;
+      }
 
       const data = response.data;
 
       setConversationId(data.id);
       setMessages(data.messages);
     } catch (error) {
-      console.error("Could not load conversation:", error);
+      if (getActiveSessionToken() !== sessionToken) {
+        setHistoryError(SESSION_CHANGED_MESSAGE);
+      } else {
+        console.error("Could not load conversation:", error);
+        setHistoryError(
+          "Could not load this conversation from your account. Check your connection and try again."
+        );
+      }
     } finally {
       setHistoryLoading(false);
     }
@@ -353,6 +522,7 @@ export default function Chat() {
     setConversationId(null);
     setMessages([]);
     setMessage("");
+    setHistoryError("");
   };
 
   /*
@@ -429,10 +599,38 @@ export default function Chat() {
             Conversation history
           </h2>
 
-          {activeConversations.length === 0 ? (
-            <p className="px-1 py-4 text-sm text-ink-500">
-              No previous conversations.
-            </p>
+          {conversationsError && (
+            <div
+              className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"
+              role="alert"
+            >
+              <p>{conversationsError}</p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (currentUserId) {
+                    void syncConversations(currentUserId);
+                  }
+                }}
+                className="mt-2 font-semibold underline underline-offset-2"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {conversationsLoading && activeConversations.length === 0 ? (
+            <div className="flex items-center gap-2 px-1 py-4 text-sm text-ink-500">
+              <Spinner size="sm" className="text-brand-500" />
+              Loading conversations...
+            </div>
+          ) : activeConversations.length === 0 ? (
+            conversationsError ? null : (
+              <p className="px-1 py-4 text-sm text-ink-500">
+                No previous conversations.
+              </p>
+            )
           ) : (
             <div className="mt-3 max-h-64 space-y-2 overflow-y-auto lg:max-h-[460px]">
               {activeConversations.map((conversation) => {
@@ -538,6 +736,15 @@ export default function Chat() {
             className="h-[440px] overflow-y-auto overflow-x-hidden bg-mist/50 p-4 sm:p-6 lg:h-[520px]"
             aria-live="polite"
           >
+            {historyError && (
+              <div
+                className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                role="alert"
+              >
+                {historyError}
+              </div>
+            )}
+
             {historyLoading ? (
               <div className="flex h-full items-center justify-center gap-2 text-sm text-ink-500">
                 <Spinner className="text-brand-500" />

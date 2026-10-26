@@ -180,8 +180,6 @@ async def process_chat_interaction(
     are preserved.
     """
 
-    print("DEBUG CHAT SERVICE MESSAGE:", message_content)
-
     # ---------------------------------------------------------
     # 1. Get existing conversation or create a new one
     # ---------------------------------------------------------
@@ -258,9 +256,6 @@ async def process_chat_interaction(
     safety_response = build_safety_response(
         risk_result
     )
-
-    print("DEBUG risk result:", risk_result)
-    print("DEBUG safety response:", safety_response)
 
     # ---------------------------------------------------------
     # 5A. Physical symptom safety
@@ -554,7 +549,7 @@ async def process_chat_interaction(
          message=message_content,
          assessment_context=None,
          conversation_history=conversation_history,
-         use_rag=False,
+         use_rag=True,
          support_recommendation=None,
          emotion_result=None,
          use_emotion_context=False,
@@ -569,11 +564,6 @@ async def process_chat_interaction(
     )
 
     if not guardrail_result["safe"]:
-        print(
-            "DEBUG response guardrail:",
-            guardrail_result,
-        )
-
         if safety_response:
             ai_response_text = safety_response
     # ---------------------------------------------------------
@@ -629,3 +619,72 @@ async def get_user_conversation_history(
         "started_at": conversation.started_at,
         "messages": messages,
     }
+
+
+def _derive_conversation_title(
+    stored_title: str | None,
+    first_user_message: str | None,
+    max_length: int = 80,
+) -> str | None:
+    raw_title = (
+        stored_title
+        if stored_title and stored_title.strip()
+        else first_user_message
+    )
+
+    if not raw_title:
+        return None
+
+    normalized = " ".join(raw_title.split())
+
+    if not normalized:
+        return None
+
+    return normalized[:max_length]
+
+
+def get_user_conversations(
+    db: Session,
+    user_id: UUID,
+    limit: int = 100,
+) -> list[dict]:
+    """
+    List conversations owned by the authenticated user, newest first.
+    """
+
+    first_user_message = (
+        db.query(Message.content)
+        .filter(
+            Message.conversation_id == Conversation.id,
+            Message.sender == SenderType.USER,
+        )
+        .order_by(Message.created_at.asc())
+        .limit(1)
+        .correlate(Conversation)
+        .scalar_subquery()
+    )
+
+    rows = (
+        db.query(
+            Conversation.id,
+            Conversation.title,
+            Conversation.started_at,
+            first_user_message.label("first_user_message"),
+        )
+        .filter(Conversation.user_id == user_id)
+        .order_by(Conversation.started_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    return [
+        {
+            "id": row.id,
+            "title": _derive_conversation_title(
+                row.title,
+                row.first_user_message,
+            ),
+            "started_at": row.started_at,
+        }
+        for row in rows
+    ]

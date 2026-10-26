@@ -10,10 +10,12 @@ from app.schemas.chat import (
     ChatRequest,
     ChatResponse,
     ConversationHistoryResponse,
+    ConversationSummaryResponse,
     MessageResponse,
 )
 from app.services.chat_service import (
     process_chat_interaction,
+    get_user_conversations,
     get_user_conversation_history,
 )
 
@@ -49,6 +51,20 @@ async def send_chat_message(
             status_code=404,
             detail=str(e)
         )
+
+
+@router.get(
+    "/conversations",
+    response_model=list[ConversationSummaryResponse]
+)
+async def list_chat_conversations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return get_user_conversations(
+        db=db,
+        user_id=current_user.id
+    )
 
 
 @router.get(

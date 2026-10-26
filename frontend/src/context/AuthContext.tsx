@@ -50,7 +50,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // backend so role-based UI stays correct after a page refresh. The backend
   // remains the authority on roles/access -- this is only for rendering.
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
       setLoading(false);
       return;
     }
@@ -59,16 +61,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const loadCurrentUser = async () => {
       try {
-        const response = await api.get<User>("/users/me");
-        if (!cancelled) setUser(response.data);
+        const response = await api.get<User>("/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        // Another tab may have replaced the token while this probe was in
+        // flight; do not apply an identity that no longer matches storage.
+        if (!cancelled && localStorage.getItem("access_token") === token) {
+          setUser(response.data);
+        }
       } catch (error) {
         const status = (error as { response?: { status?: number } })?.response
           ?.status;
 
         if (status === 401) {
-          // Expired or invalid token: drop it so the app falls back to
-          // the logged-out state instead of staying half-authenticated.
-          localStorage.removeItem("access_token");
+          // Expired or invalid token: drop it so the app falls back to the
+          // logged-out state. Only remove the exact token this request used;
+          // a newer cross-tab login may already have replaced it.
+          if (localStorage.getItem("access_token") === token) {
+            localStorage.removeItem("access_token");
+          }
           if (!cancelled) setUser(null);
         } else {
           console.error("Could not load current user:", error);
